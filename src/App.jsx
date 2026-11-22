@@ -29,19 +29,17 @@ export default function App() {
     loadBugs();
   }, []);
 
-  // Derived filtered bugs (Mission 3: derived value without storing filtered results in state)
   const filteredBugs = bugs.filter((bug) =>
     bug.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddBug = (newBug) => {
-    // Immutable update (Mission 4)
     setBugs((prevBugs) => [newBug, ...prevBugs]);
   };
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif" }}>
-      <h1>Bug Bounty Board</h1>
+      <h1>The Bug Bazaar</h1>
       <nav style={{ marginBottom: "20px" }}>
         <Link to="/">Board</Link>
       </nav>
