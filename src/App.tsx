@@ -1,6 +1,6 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
-import { fetchBugs } from './mockApi';
+import { fetchBugs } from './api/mockApi';
 import type { Bug } from './types/bazaar';
 import BugList from './components/BugList';
 import ReportBugForm from './components/ReportBugForm';

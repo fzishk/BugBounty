@@ -43,3 +43,53 @@ export type RequestState<T> =
   | { status: 'loading' }
   | { status: 'success'; data: T }
   | { status: 'error'; error: ApiError };
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: 'customer';
+};
+
+export type OrderItem = {
+  productId: string;
+  name: string;
+  unitPrice: number; // integer cents
+  quantity: number;
+};
+
+export type Order = {
+  id: string;
+  userId: string;
+  items: OrderItem[];
+  total: number; // integer cents
+  status: 'confirmed';
+  createdAt: string;
+};
+
+export type CreateOrderItemInput = {
+  productId: string;
+  quantity: number;
+};
+
+export type CreateOrderPayload = {
+  items: CreateOrderItemInput[];
+  idempotencyKey?: string;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  token: string;
+  user: User;
+};
+
+export type ProductListResponse = {
+  items: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
