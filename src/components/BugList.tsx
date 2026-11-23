@@ -1,7 +1,11 @@
-import React from "react";
-import BugCard from "./BugCard";
+import type { Bug } from '../types/bazaar';
+import BugCard from './BugCard';
 
-export default function BugList({ bugs }) {
+type BugListProps = {
+  bugs: Bug[];
+};
+
+export default function BugList({ bugs }: BugListProps) {
   if (bugs.length === 0) {
     return <p>No bugs found.</p>;
   }
