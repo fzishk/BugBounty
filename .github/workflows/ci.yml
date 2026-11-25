@@ -1,32 +1,41 @@
 name: CI
 
+# Runs on every pull request and on pushes to the main branches.
+# With branch protection requiring the "verify" check, a failing step blocks the merge.
 on:
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [main, feat/bug-bazaar]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version-file: .nvmrc
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Type check
         run: npm run typecheck
+
+      - name: Tests
+        run: npm test
 
       - name: Build
         run: npm run build

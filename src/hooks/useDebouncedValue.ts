@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react';
 
-export function useDebouncedValue<T>(value: T, delayMs = 250): T {
-  const [debounced, setDebounced] = useState<T>(value);
+/** Returns `value` only after it has stopped changing for `delayMs`. */
+export function useDebouncedValue<T>(value: T, delayMs = 300): T {
+  const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebounced(value);
-    }, delayMs);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
+    const timer = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timer); // a new keystroke cancels the pending update
   }, [value, delayMs]);
 
   return debounced;

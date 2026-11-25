@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+# Bonus (D4-6): every push to main is built and published automatically.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build for /<repo>/ sub-path
+        run: npm run build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+      # GitHub Pages has no SPA rewrites: serving index.html as 404.html makes deep links work.
+      - run: cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke-test:
+    # A quick check that the deployed site really serves the app, including a deep link.
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Home page and deep link return the app
+        run: |
+          BASE="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          sleep 20
+          for path in "/" "/products/prod-0042" "/mockServiceWorker.js"; do
+            code=$(curl -s -o page.html -w '%{http_code}' "$BASE$path")
+            echo "$path -> HTTP $code"
+            # Deep links come back from 404.html (status 404) but must contain the app shell.
+            grep -qE 'id="root"|mockServiceWorker' page.html || { echo "App not served for $path"; exit 1; }
+          done
