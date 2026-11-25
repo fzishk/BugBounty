@@ -45,3 +45,19 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke-test:
+    # A quick check that the deployed site really serves the app, including a deep link.
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Home page and deep link return the app
+        run: |
+          BASE="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          sleep 20
+          for path in "/" "/products/prod-0042" "/mockServiceWorker.js"; do
+            code=$(curl -s -o page.html -w '%{http_code}' "$BASE$path")
+            echo "$path -> HTTP $code"
+            # Deep links come back from 404.html (status 404) but must contain the app shell.
+            grep -qE 'id="root"|mockServiceWorker' page.html || { echo "App not served for $path"; exit 1; }
+          done
