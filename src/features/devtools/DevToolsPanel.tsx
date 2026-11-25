@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Bug, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { bazaarApi } from '../../api/bazaarApi';
@@ -27,6 +27,20 @@ const actionButton =
  */
 export function DevToolsPanel() {
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  // Escape closes the panel and returns focus to the button that opened it.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
   const dispatch = useAppDispatch();
   const settings = useSyncExternalStore(chaos.subscribe, chaos.get);
   const errors = useSyncExternalStore(subscribeToErrors, getLoggedErrors);
@@ -40,6 +54,7 @@ export function DevToolsPanel() {
   return (
     <>
       <button
+        ref={toggleRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
